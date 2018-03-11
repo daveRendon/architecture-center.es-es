@@ -38,11 +38,11 @@ La arquitectura consta de los siguientes componentes.
  
 - **Conjuntos de disponibilidad**. Coloque las máquinas virtuales para los roles de SAP ACSC, el servidor de aplicaciones de SAP y SAP Web Dispatcher en conjuntos de disponibilidad independientes y aprovisione al menos dos máquinas virtuales para cada rol. Esto hace que las máquinas virtuales sean aptas para un Acuerdo de Nivel de Servicio (SLA) mayor.
     
-- **NIC**. Las máquinas virtuales que ejecutan SAP NetWeaver y SAP HANA requieren dos interfaces de red (NIC). Cada NIC se asigna a una subred diferente, con el fin de separar los distintos tipos de tráfico. Para más información, consulte la sección [Recomendaciones](#recommendations) a continuación.
+- **Interfaces de Red (NIC)**. Las máquinas virtuales que ejecutan SAP NetWeaver y SAP HANA requieren dos interfaces de red (NIC). Cada NIC se asigna a una subred diferente, con el fin de separar los distintos tipos de tráfico. Para más información, consulte la sección [Recomendaciones](#recommendations) a continuación.
 
 - **Clúster de conmutación por error de Windows Server**. Las máquinas virtuales que ejecutan SAP ACSC están configuradas como clúster de conmutación por error para lograr una alta disponibilidad. Para admitir el clúster de conmutación por error, SIOS DataKeeper Cluster Edition realiza la función de volumen compartido de clúster (CSV) mediante la replicación de discos independientes que pertenecen a los nodos del clúster. Para más información, consulte [Running SAP applications on the Microsoft platform][running-sap] (Ejecución de aplicaciones SAP en la plataforma de Microsoft).
     
-- **Equilibradores de carga.** Se usan dos instancias de [Azure Load Balancer][azure-lb]. La primera, que se muestra a la izquierda del diagrama, distribuye el tráfico a las máquinas virtuales de SAP Web Dispatcher. Esta configuración implementa la opción de distribuidor web en paralelo que se describe en [High Availability of the SAP Web Dispatcher (Alta disponibilidad de SAP Web Dispatcher)][sap-dispatcher-ha]. El segundo equilibrador de carga, que se muestra a la derecha, habilita la conmutación por error en el clúster de conmutación por error de Windows Server, para lo que dirige las conexiones entrantes al nodo activo/correcto.
+- **Balanceadores de carga.** Se usan dos instancias de [Azure Load Balancer][azure-lb]. La primera, que se muestra a la izquierda del diagrama, distribuye el tráfico a las máquinas virtuales de SAP Web Dispatcher. Esta configuración implementa la opción de distribuidor web en paralelo que se describe en [High Availability of the SAP Web Dispatcher (Alta disponibilidad de SAP Web Dispatcher)][sap-dispatcher-ha]. El segundo equilibrador de carga, que se muestra a la derecha, habilita la conmutación por error en el clúster de conmutación por error de Windows Server, para lo que dirige las conexiones entrantes al nodo activo/correcto.
 
 - **VPN Gateway.** VPN Gateway extiende su red local a la red virtual de Azure. También puede usar ExpressRoute, que utiliza una conexión privada dedicada que no pasa por la red Internet pública. La solución de ejemplo no implementa la puerta de enlace. Para más información, consulte [Connect an on-premises network to Azure][hybrid-networking] (Conexión de una red local a Azure).
 
@@ -50,17 +50,17 @@ La arquitectura consta de los siguientes componentes.
 
 Los requisitos pueden diferir de los de la arquitectura que se describe aquí. Use estas recomendaciones como punto de partida.
 
-### <a name="load-balancers"></a>Equilibradores de carga
+### <a name="load-balancers"></a>Balanceadores de carga
 
-[SAP Web Dispatcher][sap-dispatcher] controla el equilibrio de carga del tráfico HTTP(S) en los servidores de doble pila (ABAP y Java). Durante años SAP ha propugnado servidores de aplicaciones de una sola pila, por lo que en la actualidad muy pocas aplicaciones se ejecutan en un modelo de implementación de pila doble. La instancia de Azure Load Balancer que se muestra en el diagrama de la arquitectura implementa el clúster de alta disponibilidad para SAP Web Dispatcher.
+[SAP Web Dispatcher][sap-dispatcher] controla el balanceo de carga del tráfico HTTP(S) entre los servidores de doble pila (ABAP y Java). Durante años SAP ha propugnado servidores de aplicaciones de una sola pila, por lo que en la actualidad muy pocas aplicaciones se ejecutan en un modelo de implementación de pila doble. La instancia de Azure Load Balancer que se muestra en el diagrama de la arquitectura implementa el clúster de alta disponibilidad para SAP Web Dispatcher.
 
-El equilibrio de carga del tráfico que llega a los servidores de aplicaciones se controla en SAP. En el caso del tráfico de los clientes SAPGUI que se conectan a un servidor de SAP a través de DIAG y llamadas a funciones remotas (RFC), el servidor de mensajes SCS equilibra la carga mediante la creación de [grupos de inicio de sesión][logon-groups] del servidor de aplicaciones de SAP. 
+El balanceo de carga del tráfico que llega a los servidores de aplicaciones se controla en SAP. En el caso del tráfico de los clientes SAPGUI que se conectan a un servidor de SAP a través de DIAG y llamadas a funciones remotas (RFC), el servidor de mensajes SCS equilibra la carga mediante la creación de [grupos de inicio de sesión][logon-groups] del servidor de aplicaciones de SAP. 
 
 SMLG es una transacción de SAP ABAP que se usa para administrar la funcionalidad de equilibrio de carga del inicio de sesión de los servicios centrales de SAP. El grupo de back-end del grupo de inicio de sesión tiene más de un servidor de aplicaciones de ABAP. Los clientes que acceden a los servicios de clúster de ASCS se conectan a Azure Load Balancer a través de una dirección IP de front-end. El nombre de red virtual del clúster de ASCS también tiene una dirección IP. Si lo desea, esta dirección puede asociarse a una dirección IP adicional en Azure Load Balancer, con el fin de que el clúster se puede administrar de forma remota.  
 
 ### <a name="nics"></a>Tarjetas de red
 
-Las funciones de administración del entorno de SAP requieren separación del tráfico del servidor en diferentes tarjetas de red. Por ejemplo, los datos empresariales se deben separar tanto del tráfico administrativo como del de copias de seguridad. La asignación de varias tarjetas de red a diferentes subredes permite esta separación de datos. Para más información, consulte "Red" en el documento [Building High Availability for SAP NetWeaver and SAP HANA][sap-ha] (Creación de alta disponibilidad para SAP NetWeaver y SAP HANA) (en PDF).
+Las funciones de administración del entorno de SAP requieren separación del tráfico del servidor en diferentes tarjetas de red. Por ejemplo, los datos empresariales se deben separar tanto del tráfico administrativo como del de copias de seguridad. La asignación de varias tarjetas de red a diferentes subredes permite esta separación de datos. Para más información, consulte "Red" en el documento [Creación de Alta Disponibilidad para SAP NetWeaver y SAP HANA][sap-ha] (Creación de alta disponibilidad para SAP NetWeaver y SAP HANA) (en PDF).
 
 Asigne la tarjeta de red de administración a la subred de administración y la tarjeta de red de comunicación de datos a otra subred. Para ver los detalles de la configuración, consulte [Creación y administración de una máquina virtual Windows que tiene varias tarjetas de red][multiple-vm-nics].
 
@@ -91,11 +91,11 @@ En esta instalación distribuida de la aplicación de SAP en una base de datos c
 
 - **ASCS.** Para lograr alta disponibilidad de ASCS en máquinas virtuales Windows de Azure, se usa Windows Sever Failover Clustering con SIOS DataKeeper para implementar el volumen compartido del clúster. Para obtener detalles acerca de la implementación, consulte [Clustering SAP ASCS on Azure][clustering] (Agrupación de SAP ASCS en clústeres en Azure).
 
-- **Servidores de aplicaciones.** La alta disponibilidad se logra mediante el equilibrio de la carga de tráfico dentro de un grupo de servidores de aplicaciones.
+- **Servidores de aplicaciones.** La alta disponibilidad se logra mediante el balanceo y/o distribución de la carga de tráfico dentro de un grupo de servidores de aplicaciones.
 
 - **Nivel de base de datos.** Esta arquitectura de referencia implementa una única instancia de base de datos de SAP HANA. Para lograr alta disponibilidad, implemente más de una instancia y utilice la replicación del de HANA (HSR) para implementar la conmutación por error manual. Para habilitar la conmutación automática por error, se requiere una extensión HA para la distribución específica de Linux.
 
-### <a name="disaster-recovery-considerations"></a>Consideraciones acerca de la recuperación ante desastres
+### <a name="disaster-recovery-considerations"></a>Consideraciones acerca de recuperación de desastres
 
 Cada nivel utiliza una estrategia diferente para proporcionar protección mediante la recuperación ante desastres (DR).
 
