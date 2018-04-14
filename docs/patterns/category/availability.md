@@ -21,6 +21,6 @@ La disponibilidad define la proporción de tiempo que un sistema es funcional y 
 |                            Patrón                             |                                                           Resumen                                                            |
 |----------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
 | [Health Endpoint Monitoring](../health-endpoint-monitoring.md) | Implementa comprobaciones funcionales en una aplicación a la que pueden acceder herramientas externas a través de los puntos de conexión expuestos en intervalos regulares. |
-|  [Queue-Based Load Leveling](../queue-based-load-leveling.md)  | Use una cola que actúe como búfer entre una tarea y un servicio que invoca para equilibrar cargas pesadas intermitentes.  |
-|                 [Limitaciones](../throttling.md)                 |   Controlan el consumo de recursos que usa una instancia de una aplicación, un inquilino individual o un servicio completo.    |
+|  [Queue-Based Load Leveling](../queue-based-load-leveling.md)  | Use una cola de procesamiento que actúe como búfer entre una tarea y un servicio que invoca para equilibrar cargas pesadas intermitentes.  |
+|                 [Limitaciones](../throttling.md)                 |   Controlan el consumo de recursos que usa una instancia de una aplicación, un tenant sencillo o un servicio completo.    |
 
